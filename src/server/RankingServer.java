@@ -12,12 +12,16 @@ public class RankingServer extends Thread
     List<Company> com;
     Server server;
     int close;
+    BufferedWriter bw;
     
     public RankingServer(String name,List<Company> c,Server s) throws IOException 
     {
         super(name);
         com=c;
         server=s;
+        try{
+            bw = new BufferedWriter(new FileWriter("appdata/rank.txt"));
+        }catch(Exception mm){}
     }
     
     DecimalFormat twoDForm = new DecimalFormat("#.##");
@@ -47,9 +51,18 @@ public class RankingServer extends Thread
                             jj+=(RegList.userList.size()-i)+" )  "+user.getName()+"->"+twoDForm.format(getScore(user))+"\n";
                         }
                         StockMart.ranks.setText(jj);
+                        SwingUtilities.invokeLater(new Runnable(){
+                            public void run(){
+                                StockMart.jkps.getVerticalScrollBar().setValue(0);
+                            }
+                        });
                     }
                 });
                 server.sendMulti(dString);
+                try{
+                    bw.write(new Date().toString()+":"+dString+"\n");
+                    bw.flush();
+                }catch(Exception mm){mm.printStackTrace();}
                 try 
                 {
                     sleep(SECONDS);

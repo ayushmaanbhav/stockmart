@@ -7,7 +7,7 @@ import user.*;
 
 class RankingWindow extends JPanel
 {
-    JTextPane jta;
+    JTextPane jta;JScrollPane jsp;
     public RankingWindow(Client cc)
     {
         setLayout(new BorderLayout());
@@ -20,10 +20,10 @@ class RankingWindow extends JPanel
         jta.setFont(new Font("Lucida Sans Unicode",Font.BOLD,14));
         jta.setEditable(false);
         jta.setForeground(Color.red.darker());
-        JScrollPane jsp=new JScrollPane(jta,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        jsp=new JScrollPane(jta,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         add(jlab,BorderLayout.NORTH);
         add(jsp,BorderLayout.CENTER);
-        RankingClient cser=new RankingClient(jta);
+        RankingClient cser=new RankingClient(jta,jsp);
         cc.rc=cser;
     }
 }

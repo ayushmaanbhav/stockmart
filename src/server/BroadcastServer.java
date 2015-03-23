@@ -6,7 +6,7 @@ import java.text.*;
 
 public class BroadcastServer extends Thread
 {    
-    private long SECONDS = 15000;   
+    private long SECONDS = 30000;   
     List<Company> com;
     int close;
     Server server;
@@ -16,12 +16,13 @@ public class BroadcastServer extends Thread
         super(name);
         com=c;
         server=s;
+        setPriority(MAX_PRIORITY);
     }
 
     static DecimalFormat twoDForm = new DecimalFormat("#.##");
     public void run() {
         close=0;
-        while (!interrupted() && com.size()>0)
+        while (com.size()>0)
         {
             if(close==1)
                 break;
@@ -33,7 +34,8 @@ public class BroadcastServer extends Thread
                 for(int i=0;i<com.size();i++)
                 {
                     Company c=com.get(i);
-                    dString+=Integer.toString(i)+":"+c.name+":"+String.valueOf(c.sharevalue.get(c.sharevalue.size()-1))+":"+String.valueOf(c.sharevalue.get(0))+":"+String.valueOf(c.getHighest())+":"+String.valueOf(c.getLowest())+";";
+                    if(!c.bankrupt)
+                        dString+=Integer.toString(i)+":"+c.name+":"+String.valueOf(c.sharevalue.get(c.sharevalue.size()-1))+":"+String.valueOf(c.sharevalue.get(0))+":"+String.valueOf(c.getHighest())+":"+String.valueOf(c.getLowest())+";";
                 }
                 server.sendMulti(dString);
                 try 

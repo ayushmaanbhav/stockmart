@@ -81,12 +81,14 @@ public class Server {
         clientCount++;
         Thread1 g=new Thread1() 
         {
+            BufferedWriter bw;
             BufferedReader in;
             //PrintWriter out;
             ObjectOutputStream objout;
             ObjectInputStream objin;
             volatile protected User user=null;
             volatile protected boolean loggedIn=false;
+            Object obj = new Object();
             public void run() 
             {
                 try 
@@ -111,8 +113,9 @@ public class Server {
                 } catch (Exception ex) {
                 ex.printStackTrace();}
             }
-            void processCommand(String command1)
+            void processCommand(final String command1)
             {
+                final String cmdid = command1.split(";")[0];
                 String command=command1.toLowerCase().split(";")[1];
                 String cmmd[]=command.split(":");
                 for(int i=0;i<cmmd.length;i++)
@@ -123,25 +126,35 @@ public class Server {
                     if(res==1)
                     {
                         //out.println("1:Registration Successful !!");
-                        try
-                        {
-                            //System.out.println(res);
-                            objout.writeObject(new String("1:rs"));
-                            objout.flush();
-                            //System.out.println(res);
-                        }catch(Exception e){e.printStackTrace();}
+                        synchronized (obj)
+                            {
+                                try
+                                {
+                                //System.out.println(res);
+                            
+                                objout.writeObject(new String(cmdid));
+                                objout.writeObject(new String("1:rs"));
+                                objout.flush();
+                            
+                                //System.out.println(res);
+                            }catch(Exception e){e.printStackTrace();}
+                        }
                     }
                     else
                     {
                         //out.println(res+":Wrong Registration Number !!");
                         //out.flush();    
+                        synchronized (obj)
+                            {
                         try
                         {
                             //System.out.println(res);
-                            objout.writeObject(new String(res+":wrn"));
-                            objout.flush();
+                                objout.writeObject(new String(cmdid));
+                                objout.writeObject(new String(res+":wrn"));
+                                objout.flush();
+                            
                             //System.out.println(res);
-                        }catch(Exception e){e.printStackTrace();}
+                        }catch(Exception e){e.printStackTrace();}}
                     }
                     try
                     {
@@ -164,6 +177,9 @@ public class Server {
                     {
                         user=RegList.getUser(cmmd[1],cmmd[2]);
                         loggedIn=true;
+                        try{
+                            bw = new BufferedWriter(new FileWriter("appdata/userdata/"+user.getName()+".txt",true));
+                        }catch(Exception mm){}
                         /*new Thread(){
                             public void run(){
                                 try{
@@ -172,17 +188,24 @@ public class Server {
                                         try{
                                             Thread.sleep(60000);
                                         }catch(Exception f){}
-                                        objout.reset();
+                                        try{ objout.reset(); }catch(Exception mkl){mkl.printStackTrace();}
                                         objout.writeObject(new String("there?"));
                                         objout.flush();
                                     }
                                 }catch(Exception e){}
                             }
                         }.start();*/
-                        try{  
-                            objout.writeObject(new String("0:s"));
-                            objout.flush();
-                        }catch(Exception e){e.printStackTrace();}
+                        synchronized (obj)
+                            {try{  
+                                objout.writeObject(new String(cmdid));
+                                objout.writeObject(new String("0:s"));
+                                objout.flush();
+                            
+                        }catch(Exception e){e.printStackTrace();}}
+                        try{
+                            bw.write(new Date().toString()+":loggedin\n");
+                            bw.flush();
+                        }catch(Exception mm){mm.printStackTrace();}
                     }
                     else
                     {
@@ -192,10 +215,13 @@ public class Server {
                         }
                         //out.println(res+":failed");
                         //out.flush();
+                        synchronized (obj)
+                            {
                         try{
+                            objout.writeObject(new String(cmdid));
                             objout.writeObject(new String(res+":f"));
                             objout.flush();
-                        }catch(Exception e){e.printStackTrace();}
+                        }catch(Exception e){e.printStackTrace();}}
                         try
                         {
                             //Thread.sleep(5000);
@@ -221,10 +247,20 @@ public class Server {
                     clientList.remove(this);
                     //out.println("1");
                     //out.flush();
+                    synchronized (obj)
+                        {
                     try{
-                        objout.writeObject(new String("1"));
-                        objout.flush();
-                    }catch(Exception e){}
+                            objout.writeObject(new String(cmdid));
+                            objout.writeObject(new String("1"));
+                            objout.flush();
+                        
+                    }catch(Exception e){}}
+                    try{
+                        bw.write(new Date().toString()+":loggedout\n");
+                        bw.flush();
+                        bw.close();
+                        bw=null;
+                    }catch(Exception mm){mm.printStackTrace();}
                     try
                     {
                         //Thread.sleep(5000);
@@ -245,15 +281,20 @@ public class Server {
                     {
                         try
                         {
+                            synchronized (obj)
+                                {
                             try{
-                                objout.reset();
-                                objout.writeObject(user);
-                                objout.flush();
+                                
+                                    //try{ objout.reset(); }catch(Exception mkl){mkl.printStackTrace();}
+                                    objout.writeObject(new String(cmdid));
+                                    objout.writeObject(new User(user));
+                                    objout.flush();
+                                
                                 clientList.add(this);
                             }catch(Exception e)
                             {
                                 e.printStackTrace();
-                            }
+                            }}
                         }catch(Exception e)
                         {
                             e.printStackTrace();
@@ -287,19 +328,75 @@ public class Server {
                                 });
                             }
                         }
+                        synchronized (obj)
+                            {
                         try{
-                            objout.writeObject(Integer.toString(user.getChat()));
-                            objout.flush();
+                                objout.writeObject(new String(cmdid));
+                                objout.writeObject(Integer.toString(user.getChat()));
+                                objout.flush();
+                            
+                        }catch(Exception e)
+                        {
+                            e.printStackTrace();
+                        }}
+                    }
+                    else if(cmmd[0].equals("chath"))
+                    {
+                        synchronized (obj)
+                            {
+                        try{
+                                objout.writeObject(new String(cmdid));
+                                objout.writeObject(chatHist);
+                                objout.flush();
+                            
                         }catch(Exception e)
                         {
                             e.printStackTrace();
                         }
+                        }
                     }
-                    else if(cmmd[0].equals("chath"))
+                    else if(cmmd[0].equals("getch"))
                     {
                         try{
-                            objout.writeObject(chatHist);
-                            objout.flush();
+                            Company comp=null;
+                            for(int k=0;k<companies.size();k++)
+                            {
+                                if(companies.get(k).name.equalsIgnoreCase(cmmd[1].trim()))
+                                {
+                                    comp=companies.get(k);
+                                    break;
+                                }
+                            }
+                            if(comp!=null && Integer.parseInt(cmmd[2].trim()) != comp.sharevalue.size())
+                            {
+                                synchronized (obj)
+                                {
+                                    try{
+                                        objout.flush();
+                                        objout.reset();
+                                        objout.writeObject(new String(cmdid));
+                                        objout.writeObject(comp.sharevalue);
+                                        objout.flush();                           
+                                    }catch(Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                synchronized (obj)
+                                {
+                                    try{
+                                        objout.writeObject(new String(cmdid));
+                                        objout.writeObject(new ArrayList<Double>());
+                                        objout.flush();                           
+                                    }catch(Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
                         }catch(Exception e)
                         {
                             e.printStackTrace();
@@ -338,11 +435,12 @@ public class Server {
                                 public void run(){
                                     final int id=share.id;
                                     try{
-                                        Thread.sleep(32000);
+                                        Thread.sleep(30000);
                                     }catch(Exception e){}
-                                    synchronized(user)
+                                    try{
+                                    synchronized(companies)
                                     {
-                                        synchronized(companies)
+                                        synchronized(user)
                                         {
                                             for(int i=0;i<user.getPendingShares().size();i++)
                                             {
@@ -398,25 +496,50 @@ public class Server {
                                             }
                                         }
                                     }
+                                    }catch(Exception e)
+                                    {
+                                        sh.status="Failed (You were disconnected)";
+                                    }
+                                    synchronized (obj)
+                                        {
                                     try{
-                                        objout.reset();
-                                        objout.writeObject(user);
+                                        
+                                            //try{ objout.reset(); }catch(Exception mkl){mkl.printStackTrace();}
+                                            objout.writeObject(new User(user));
+                                            objout.flush();
+                                        }
+                                    catch(Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }}
+                                    try{
+                                        bw.write(new Date().toString()+":afterprocessingbuy:"+sh.id+":"+sh.company+":"+sh.qty+":"+sh.cost+":"+sh.status+"\n");
+                                        bw.flush();
+                                    }catch(Exception mm){mm.printStackTrace();}
+                                }
+                            }.start();
+                        
+                            try{                          
+                                user.getPendingShares().add(share);
+                                synchronized (obj)
+                                {
+                                    try{
+                                        objout.writeObject(new String(cmdid));
+                                        objout.writeObject(share);
                                         objout.flush();
                                     }catch(Exception e)
                                     {
                                         e.printStackTrace();
                                     }
                                 }
-                            }.start();
-                        
-                            try{                          
-                                user.getPendingShares().add(share);
-                                objout.writeObject(share);
-                                objout.flush();
                             }catch(Exception e)
                             {
                                 e.printStackTrace();
                             }
+                            try{
+                                bw.write(new Date().toString()+":buy:"+share.id+":"+share.company+":"+share.qty+":"+share.cost+":"+share.status+"\n");
+                                bw.flush();
+                            }catch(Exception mm){mm.printStackTrace();}
                         }
                         else if(cmmd[0].equals("sell"))
                         {            
@@ -449,8 +572,9 @@ public class Server {
                                     final int sellid=share.sellid;
                                     final int id=share.id;
                                     try{
-                                        Thread.sleep(32000);
+                                        Thread.sleep(30000);
                                     }catch(Exception e){} 
+                                    try{
                                     synchronized(companies)
                                     {
                                         synchronized(user)
@@ -508,25 +632,50 @@ public class Server {
                                             }
                                         }
                                     }
+                                    }catch(Exception e)
+                                    {
+                                        sh.status="Failed (You were disconnected)";
+                                    }
+                                    synchronized (obj)
+                                        {
                                     try{
-                                        objout.reset();
-                                        objout.writeObject(user);
+                                        
+                                            //try{ objout.reset(); }catch(Exception mkl){mkl.printStackTrace();}
+                                            objout.writeObject(new User(user));
+                                            objout.flush();
+                                        
+                                    }catch(Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }}
+                                    try{
+                                        bw.write(new Date().toString()+":afterprocessingsell:"+sh.id+":"+sh.sellid+":"+sh.company+":"+sh.qty+":"+sh.cost+":"+sh.status+"\n");
+                                        bw.flush();
+                                    }catch(Exception mm){mm.printStackTrace();}
+                                }
+                            }.start();
+                        
+                            try{                          
+                                user.getPendingShares().add(share);
+                                synchronized (obj)
+                                {
+                                    try{
+                                        objout.writeObject(new String(cmdid));
+                                        objout.writeObject(share);
                                         objout.flush();
                                     }catch(Exception e)
                                     {
                                         e.printStackTrace();
                                     }
                                 }
-                            }.start();
-                        
-                            try{                          
-                                user.getPendingShares().add(share);
-                                objout.writeObject(share);
-                                objout.flush();
                             }catch(Exception e)
                             {
                                 e.printStackTrace();
                             }
+                            try{
+                                bw.write(new Date().toString()+":sell:"+share.id+":"+share.sellid+":"+share.company+":"+share.qty+":"+share.cost+":"+share.status+"\n");
+                                bw.flush();
+                            }catch(Exception mm){mm.printStackTrace();}
                         }
                         else if(cmmd[0].equals("cancel"))
                         {
@@ -547,59 +696,53 @@ public class Server {
                                 {
                                     sh.notCanceled=false;
                                     sh.status="Cancelling";
-                                    try{
-                                        objout.writeObject(new String("1"));
-                                        objout.flush();
+                                    synchronized (obj)
+                                        {try{
+                                            objout.writeObject(new String(cmdid));
+                                            objout.writeObject(new String("1"));
+                                            objout.flush();
+                                        
                                     }catch(Exception e)
                                     {
                                         e.printStackTrace();
-                                    }
+                                    }}
                                 }
                                 else
                                 {
+                                    synchronized (obj)
+                                        {
                                     try{
-                                        objout.writeObject(new String("0"));
-                                        objout.flush();
+                                            objout.writeObject(new String(cmdid));
+                                            objout.writeObject(new String("0"));
+                                            objout.flush();
+                                        
                                     }catch(Exception e)
                                     {
                                         e.printStackTrace();
-                                    }
+                                    }}
                                 }
+                                try{
+                                    bw.write(new Date().toString()+":cancel:"+sh.id+":"+sh.sellid+":"+sh.company+":"+sh.qty+":"+sh.cost+":"+sh.status+"\n");
+                                    bw.flush();
+                                }catch(Exception mm){mm.printStackTrace();}
                             }catch(Exception ef)
                             {
                                 ef.printStackTrace();
                             }
                         }
-                        else
+                    }
+                    else
+                    {
+                        synchronized (obj)
                         {
-                            try{
-                                objout.writeObject(new String("102"));
-                                objout.flush();
+                            try{                  
+                                objout.writeObject(new String(cmdid));
+                                objout.writeObject(new String("-102"));
+                                objout.flush();                                
                             }catch(Exception e)
                             {
                                 e.printStackTrace();
                             }
-                        }
-                    }
-                    else
-                    {
-                        clientCount--;
-                        clientList.remove(this);
-                        try
-                        {
-                            loggedIn=false;
-                            objout.writeObject(new String("101"));
-                            objout.flush();
-                            in.close();
-                            objout.close();
-                            socket.close();
-                            user=null;
-                            return;
-                        }catch(Exception e)
-                        {
-                            in=null;
-                            objout=null;
-                            return;
                         }
                     }
                 }
@@ -610,8 +753,16 @@ public class Server {
                     try
                     {
                         loggedIn=false;
-                        objout.writeObject(new String("101"));
-                        objout.flush();
+                        synchronized (obj)
+                        {
+                            try{
+                                objout.writeObject(new String("-101"));
+                                objout.flush();
+                            }catch(Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
                         in.close();
                         objout.close();
                         socket.close();
@@ -625,21 +776,48 @@ public class Server {
                     }
                 }
             }
-            public void sendMessage(final String mess)
+            boolean firsttime = true;
+            ArrayList<String> toSend = new ArrayList<String>();
+            Thread sender;
+            public void sendMessage(String mess)
             {
-                new Thread(){
-                    public void run()
-                    {
-                        try{            
-                            objout.reset();
-                            objout.writeObject(mess);
-                            objout.flush();
-                        }catch(Exception e)
+                toSend.add(new String(mess));
+                if(firsttime && loggedIn)
+                {
+                    sender = new Thread(){
+                        public void run()
                         {
-                            e.printStackTrace();
+                            while(loggedIn)
+                            {
+                                if(toSend.size() > 0)
+                                {
+                                    synchronized (obj)
+                                    {
+                                        try{            
+                                            //try{ objout.reset(); }catch(Exception mkl){mkl.printStackTrace();}
+                                            objout.writeObject(toSend.remove(0));
+                                            objout.flush();
+                                        }catch(Exception e)
+                                        {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    try{
+                                        Thread.sleep(1000);
+                                    }catch(Exception m){}
+                                }
+                            }
                         }
-                    }
-                }.start();
+                    };
+                    sender.start();
+                    firsttime = false;
+                }
+                try{
+                    sender.interrupt();
+                }catch(Exception m){}    
             }
         };
         g.start();

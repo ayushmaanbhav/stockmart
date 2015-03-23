@@ -11,17 +11,42 @@ public class Shares implements Serializable
     volatile public boolean notCanceled;
     public Shares()
     {
+        company=null;
+        status=null;
+        qty=0;
+        id=-1;
+        sellid=-1;
+        cost=0.0;
+        ordered=null;
+        buyed=null;
+        notCanceled=true;
     }
     public Shares(Shares s)
     {
-        company=new String(s.company);
-        status=new String(s.status);
+        try{
+            company=new String(s.company);
+        }catch(Exception k){
+            company=null;
+        }
+        try{
+            status=new String(s.status);
+        }catch(Exception k){
+            status=null;
+        }
         qty=s.qty;
         id=s.id;
         sellid=s.sellid;
         cost=s.cost;
-        ordered=(Date)s.ordered.clone();
-        buyed=(Date)s.buyed.clone();
+        try{
+            ordered=(Date)s.ordered.clone();
+        }catch(Exception k){
+            ordered=null;
+        }
+        try{
+            buyed=(Date)s.buyed.clone();
+        }catch(Exception k){
+            buyed=null;
+        }
         notCanceled=s.notCanceled;
     }
 }

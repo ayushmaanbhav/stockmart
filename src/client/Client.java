@@ -3,6 +3,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.border.*;
 import user.*;
 
 public class Client {
@@ -12,31 +15,33 @@ public class Client {
     //BufferedReader in = null;
     ObjectInputStream in;
     String domain;
-    Object reply;
     volatile int commID=0;
     Client ccl;
     int usrD;
     Main m;
+    testMain maain;
     BroadcastClient bc=null;
     RankingClient rc=null;
     ChatClient cc=null;
     Receiver rec;
     
-    public Client(Main mm)
+    public Client(Main mm,testMain maaii)
     {
         ccl=this;
-        reply=null;
         m=mm;
+        maain = maaii;
+        commID=0;
     }
     
     class Receiver extends Thread
     {
         ObjectInputStream in;
-        List<Object> rev;
+        Hashtable rev,rev2;
         public Receiver(ObjectInputStream i)
         {
             in=i;
-            rev=new ArrayList<Object>();
+            rev=new Hashtable();
+            rev2=new Hashtable();
         }
         public void run()
         {
@@ -44,7 +49,7 @@ public class Client {
             {
                 try{
                     Object obj = in.readObject();
-                    if(obj.toString().equals("101"))
+                    if(obj.toString().equals("-101"))
                     {
                         connected=false;
                         in.close();
@@ -53,29 +58,48 @@ public class Client {
                         SwingUtilities.invokeLater(new Runnable(){
                             public void run(){
                                 Cashier.closee=true;
-                                JOptionPane.showMessageDialog(null,"Disconnected from server.","Error:",JOptionPane.PLAIN_MESSAGE);
-                                m.getAppletContext().showDocument(m.getDocumentBase(), "_self");
-                            }
-                        });
-                    }
-                    else if(obj.toString().equals("102"))
-                    {
-                        reply=obj;
-                        ccl.interrupt();
-                        SwingUtilities.invokeLater(new Runnable(){
-                            public void run(){
-                                Cashier.closee=true;
-                                JOptionPane.showMessageDialog(null,"Server Not Running.","Error:",JOptionPane.PLAIN_MESSAGE);
+                                JOptionPane.showMessageDialog(null,"Disconnected from server. Please Restart","Error:",JOptionPane.PLAIN_MESSAGE);
+                                try{
+                                    m.stop();
+                                }catch(Exception w){}
                             }
                         });
                     }
                     else if(obj.toString().split("::")[0].equals("broadcast"))
                     {
+                        //System.out.println("braodcast received");
                         bc.run(obj.toString().substring(obj.toString().indexOf("::")+2));
                     }
                     else if(obj.toString().split("::")[0].equals("chat"))
                     {
+                        //System.out.println("chat received: "+obj.toString().substring(obj.toString().indexOf("::")+2));
                         cc.run(obj.toString().substring(obj.toString().indexOf("::")+2));
+                    }
+                    else if(obj.toString().split("::")[0].equals("rankings"))
+                    {
+                        String hhh = obj.toString().split("::")[1];
+                        final JDialog jd=new JDialog();
+                        jd.setUndecorated(false);
+                        JPanel pan = new JPanel(new BorderLayout());
+                        JLabel ppp = new JLabel();
+                        ppp.setFont(new Font("Arial",Font.BOLD,20));
+                        ppp.setText("<html><pre>Thanks for playing !!!<br/>1st: "+hhh.split(":")[0]+"<br/>2nd: "+hhh.split(":")[1]+"<br/>3rd: "+hhh.split(":")[2]+"</pre></html>");
+                        pan.add(ppp, BorderLayout.CENTER);
+                        JButton ok = new JButton("Ok");
+                        ok.addActionListener(new ActionListener(){
+                            public void actionPerformed(ActionEvent e){
+                                jd.setVisible(false);
+                                try{
+                                    m.stop();
+                                }catch(Exception w){}
+                            }
+                        });
+                        pan.add(ok, BorderLayout.SOUTH);
+                        jd.setContentPane(pan);
+                        jd.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
+                        jd.pack();
+                        jd.setLocationRelativeTo(null);
+                        jd.setVisible(true);
                     }
                     else if(obj.toString().split("::")[0].equals("rank"))
                     {
@@ -87,19 +111,46 @@ public class Client {
                         try
                         {
                             hhh=(User)obj;
-                            if(usrD==1)
+                            /*if(usrD==1)
                             {
                                 reply=obj;
                                 ccl.interrupt();
                             }
-                            else
+                            else*/
                             {
-                                m.ur.changeData((User)obj);
+                                try{
+                                    m.ur.changeData((User)obj);
+                                }catch(Exception w)
+                                {
+                                    try{
+                                        maain.ur.changeData((User)obj);
+                                    }catch(Exception ppp)
+                                    {ppp.printStackTrace();}
+                                }
                             }
                         }catch(Exception p)
                         {
-                            reply=obj;
-                            ccl.interrupt();
+                            int iid = -1;
+                            try{
+                                iid = Integer.parseInt(obj.toString());
+                                obj = in.readObject();
+                                if(obj.toString().equals("-102"))
+                                {
+                                    //ccl.interrupt();
+                                    SwingUtilities.invokeLater(new Runnable(){
+                                        public void run(){
+                                            Cashier.closee=true;
+                                            JOptionPane.showMessageDialog(null,"Server Not Running.","Error:",JOptionPane.PLAIN_MESSAGE);
+                                        }
+                                    });
+                                }
+                                //Thread th = ((Thread)rev.remove(iid));
+                                rev2.put(iid,obj);
+                                //System.out.println("Put: "+iid+"   :   "+obj.toString()+"   :   "+Thread.currentThread());
+                                //th.interrupt();
+                                //ccl.interrupt();
+                            }catch(Exception ppp)
+                            {/*ppp.printStackTrace();*/System.out.println("Shit: "+iid+"   :   "+obj.toString()+"   :   "+Thread.currentThread());}
                         }
                     }
                     try{
@@ -128,7 +179,6 @@ public class Client {
             this.connected = true;
             rec=new Receiver(in);
             rec.start();
-            commID=0;
         }
     }
 
@@ -140,7 +190,7 @@ public class Client {
         try{
             out.println(cmdID+";login:"+user+":"+pass);
             out.flush();
-            String rep=(String)receiveReply(0);
+            String rep=(String)receiveReply(cmdID);
             return rep.split(":")[0];
         }catch(Exception r){
         r.printStackTrace();}
@@ -155,7 +205,7 @@ public class Client {
         try{
             out.println(cmdID+";reg:"+regno+":"+user+":"+pass);
             out.flush();
-            String rep=(String)receiveReply(0);
+            String rep=(String)receiveReply(cmdID);
             disconnect();
             return rep.split(":")[0];
         }catch(Exception r){r.printStackTrace();}
@@ -185,7 +235,7 @@ public class Client {
             usrD=1;
             out.println(cmdID+";gud");
             out.flush();
-            User vv=(User)receiveReply(0);
+            User vv=(User)receiveReply(cmdID);
             usrD=0;
             return vv;
         }catch(Exception r){
@@ -200,7 +250,7 @@ public class Client {
         try{
             out.println(cmdID+";chat:"+s.trim());
             out.flush();
-            return (String)receiveReply(0);
+            return (String)receiveReply(cmdID);
         }catch(Exception r){
         r.printStackTrace();}
         return null;
@@ -213,7 +263,7 @@ public class Client {
         try{
             out.println(cmdID+";chath");
             out.flush();
-            return (String)receiveReply(0);
+            return (String)receiveReply(cmdID);
         }catch(Exception r){
         r.printStackTrace();}
         return null;
@@ -226,7 +276,7 @@ public class Client {
         try{
             out.println(cmdID+";"+cmd+":"+comp.name+":"+Integer.toString(qty)+":"+id);
             out.flush();
-            Shares pen=(Shares)receiveReply(0);
+            Shares pen=(Shares)receiveReply(cmdID);
             user.getPendingShares().add(pen);
             user.dataChanged();
         }catch(Exception r){
@@ -240,30 +290,55 @@ public class Client {
         try{
             out.println(cmdID+";cancel:"+id+":"+sellid);
             out.flush();
-            return (String)receiveReply(0);
+            return (String)receiveReply(cmdID);
+        }catch(Exception r){
+        r.printStackTrace();}
+        return null;
+    }
+    
+    java.util.List<Double> getHistory(String comp,int count)
+    {
+        int cmdID=commID++;
+        //connect(user.getName(),user.getPassword());
+        try{
+            out.println(cmdID+";"+"getch:"+comp+":"+Integer.toString(count));
+            out.flush();
+            return (java.util.List<Double>)receiveReply(cmdID);
         }catch(Exception r){
         r.printStackTrace();}
         return null;
     }
     
     boolean loop;
-    Object receiveReply(int cmdID)
+    synchronized Object receiveReply(int cmdID)
     {
-        loop=true;
+        Object reply = null;
+        rec.rev.put(cmdID, Thread.currentThread());
+        //loop=true;
         int i=0;
-        while(loop && i<=300)
-        {
+        while(/*loop &&*/ i<=150)
+        {            
             try
             {
-                Thread.sleep(100);
+                Thread.sleep(200);
+                //System.out.println("Shit: "+cmdID+"   :   "+Thread.currentThread());
+                if (rec.rev2.containsKey(cmdID))
+                {
+                    reply = rec.rev2.get(cmdID);
+                    break;
+                }
                 i++;
-            }catch(Exception m){}
+            }catch(Exception m){
+                //m.printStackTrace();
+            }
         }
+        if(i==300)
+            System.out.println("Shit: "+cmdID+"   :   "+Thread.currentThread());
         return reply;
     }
     
-    void interrupt()
+    /*synchronized void interrupt()
     {
         loop=false;
-    }
+    }*/
 }

@@ -86,14 +86,19 @@ public class BackgroundAnimation extends JPanel {
     //setDefaultCloseOperation(EXIT_ON_CLOSE);
   }
 
-  private void startAnimation() {
-    Timer timer = new Timer(50, new ActionListener() {
+  Timer timer;
+  public void startAnimation() {
+    timer = new Timer(50, new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         curves.animate();
         curves.repaint();
       }
     });
     timer.start();
+  }
+  
+  public void stopAnimation() {
+    timer.stop();
   }
 
   private void buildContentPane() {

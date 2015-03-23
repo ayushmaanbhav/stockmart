@@ -15,7 +15,7 @@ import java.util.*;
 //import com.sun.awt.AWTUtilities;
 import user.*;
 
-public class Main extends JApplet 
+public class Main extends JFrame
 {
     String dir,domain;
     Image img,img2;
@@ -37,21 +37,38 @@ public class Main extends JApplet
     RankingWindow rank;
     UserDataChangedListener udcl;
     DefaultTableModel dtm[];
-    JLabel mon[];
+    static JLabel mon[];
     ShareValuesChangeListener svcl;
-    User ur=null;
+    static User ur=null;
 
-    protected void loadAppletParameters() 
+    public static void main(String args[]) {
+        Main m = new Main();
+        m.init(args);
+    }
+    
+    int getWidth1() { return getWidth() - 20; }
+    
+    int getHeight1() { return getHeight() - 20; }
+    
+    protected void loadAppletParameters(String args[]) 
     {
-        String at = getParameter("img");
-        dir = (at != null) ? at : "./client/";
-        //at = getCodeBase().getPath();
-        at = getParameter("domain");
-        domain = (at != null)? at : "domain";
+        domain = args[0];
     }
 
     private void createGUI() 
     {
+        //Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle screenSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        setSize(screenSize.width, screenSize.height);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (JOptionPane.showConfirmDialog(main, "Are you sure you want to quit?", "Confirm exit.", JOptionPane.OK_OPTION, 0, new ImageIcon("")) != 0) {
+                    return;
+                }
+                stop();
+            }
+        });
         LookAndFeel.set();
         gbll=new GridBagLayout();
         mpane=new JPanel(gbll);
@@ -81,6 +98,7 @@ public class Main extends JApplet
         login.addActionListener(new LoginAction(main,user,pass,domain,client));
         username=new JLabel("Username");
         jcb=new JComboBox(new String[]{ "Home", "Rules", "Logout" });     //help setting
+        jcb.setLightWeightPopupEnabled(false);
         jcb.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e)
             {
@@ -89,13 +107,40 @@ public class Main extends JApplet
                 {
                     try
                     {
-                        main.getAppletContext().showDocument(new URL("http://"+domain+"/rules/index.html"), "_blank");
+                        String url = "http://"+domain+"/rules/index.html";
+                        String os = System.getProperty("os.name").toLowerCase();
+                        Runtime rt = Runtime.getRuntime();
+ 
+                        if (os.indexOf( "win" ) >= 0) {
+ 
+                            // this doesn't support showing urls in the form of "page.html#nameLink" 
+                            rt.exec( "rundll32 url.dll,FileProtocolHandler " + url);
+ 
+                        } else if (os.indexOf( "mac" ) >= 0) {
+ 
+                            rt.exec( "open " + url);
+ 
+                        } else if (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0) {
+ 
+                            // Do a best guess on unix until we get a platform independent way
+                            // Build a list of browsers to try, in this order.
+                            String[] browsers = {"epiphany", "firefox", "mozilla", "konqueror",
+                                 "netscape","opera","links","lynx"};
+ 
+                            // Build a command string which looks like "browser1 "url" || browser2 "url" ||..."
+                            StringBuffer cmd = new StringBuffer();
+                            for (int i=0; i<browsers.length; i++)
+                                cmd.append( (i==0  ? "" : " || " ) + browsers[i] +" \"" + url + "\" ");
+ 
+                            rt.exec(new String[] { "sh", "-c", cmd.toString() });
+                        }
+                        //main.getAppletContext().showDocument(new URL(), "_blank");
                     }catch(Exception ee){ee.printStackTrace();}
                 }
                 else if(sel==2)
                 {
                     main.stop();
-                    main.getAppletContext().showDocument(main.getDocumentBase(), "_self");
+                    //main.getAppletContext().showDocument(main.getDocumentBase(), "_self");
                 }
             }
         });
@@ -120,9 +165,9 @@ public class Main extends JApplet
         Font f=null;
         try{
             //f=Font.createFont(Font.TRUETYPE_FONT,getClass().getResourceAsStream("OLYMPIQUES.ttf"));
-            f=Font.createFont(Font.TRUETYPE_FONT,new URL(getCodeBase()+"/OLYMPIQUES.ttf").openStream());
+            f=Font.createFont(Font.TRUETYPE_FONT, this.getClass().getResourceAsStream("OLYMPIQUES.ttf"));
         }catch(Exception bb){bb.printStackTrace();}
-        JLabel tit=new JLabel("     StockMart@Anwesha'13");
+        JLabel tit=new JLabel("     StockMart @ celesta'13");
         tit.setOpaque(false);
         try{
             tit.setFont(f.deriveFont(Font.PLAIN,25));         //new Font("Forte",Font.BOLD,20)
@@ -188,7 +233,7 @@ public class Main extends JApplet
         imgpane=new JPanel();
         imgpane.setOpaque(false);
         JLabel imglabel=new JLabel();
-        imglabel.setSize((int)(.384*(double)getWidth()),(int)(.79*(double)getHeight()));
+        imglabel.setSize((int)(.384*(double)getWidth1()),(int)(.79*(double)getHeight1()));
         imglabel.setOpaque(false);
         imglabel.setIcon(new ImageIcon(img.getScaledInstance(imglabel.getWidth(),imglabel.getHeight(),Image.SCALE_SMOOTH)));
         imgpane.add(imglabel);
@@ -214,7 +259,7 @@ public class Main extends JApplet
         gbc.insets=new Insets(0,10,30,0);
         mpane.add(imgpane,gbc);
         
-        BackgroundAnimation tester = new BackgroundAnimation();
+        tester = new BackgroundAnimation();
         JPanel anipane=new JPanel();
         anipane.setLayout(new BoxLayout(anipane, BoxLayout.Y_AXIS));
         anipane.add(Box.createRigidArea(new Dimension(0,45)));
@@ -232,6 +277,7 @@ public class Main extends JApplet
         rb.startAnimation();
     }
     RibbonPane rb;
+    BackgroundAnimation tester;
     
     void unmovable(JInternalFrame jif)
     {
@@ -242,17 +288,19 @@ public class Main extends JApplet
             north.removeMouseMotionListener( actions[i] );
     }
 
-    public void init() {
-        loadAppletParameters();
+    public void init(String args[]) {
+        loadAppletParameters(args);
         try{
-            img=getImage(new URL(getCodeBase()+"/client/logo.png"));
-            img2=getImage(new URL(getCodeBase()+"/client/logo2.png"));
-        }catch(Exception m){}
-        client=new Client(this);
+            //img=getImage(new URL(getCodeBase()+"/client/logo.png"));
+            img=new ImageIcon(this.getClass().getResource("logo.png")).getImage();
+            img2=new ImageIcon(this.getClass().getResource("logo2.png")).getImage();
+        }catch(Exception m){m.printStackTrace();}
+        client=new Client(this,null);
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
                     createGUI();
+                    main.setVisible(true);
                 }
             });
         } catch (Exception e) { 
@@ -261,7 +309,7 @@ public class Main extends JApplet
         }
     }
     
-    DecimalFormat twoDForm = new DecimalFormat("#.##");
+    static DecimalFormat twoDForm = new DecimalFormat("#.##");
     JTable table[];
     JPanel add;
     NewsPane news;
@@ -273,8 +321,10 @@ public class Main extends JApplet
     final String[] columnNames2 = {"SrNo.","Company","C.M.P.","% Change","Low","High","Action"};
     final String[] columnNames3 = {"SrNo.","Company","Quantity","Status","Action"};
     Action delete;
+    static JTabbedPane jtp;
     void proceedLogin(User user)
     {
+        tester.stopAnimation();
         ur=user;
         username.setFont(new Font("Tempus Sans ITC",Font.BOLD,20));
         username.setText(user.getName()+"     ");
@@ -286,7 +336,7 @@ public class Main extends JApplet
         news=new NewsPane();
         news.startAnimation();
         JSplitPane jsp=new JSplitPane(JSplitPane.VERTICAL_SPLIT,new RankingWindow(client),new ChatWindow(user,client));
-        jsp.setPreferredSize(new Dimension(getWidth()/4,getHeight()-120));
+        jsp.setPreferredSize(new Dimension(getWidth1()/4,getHeight1()-120));
         gbc.gridx=6;
         gbc.gridy=1;
         gbc.fill=GridBagConstraints.VERTICAL;                 //VERTICAL
@@ -300,11 +350,11 @@ public class Main extends JApplet
         gbc.weighty=1.0;
         mpane.add(jsp,gbc);
         jp.add(jp2,BorderLayout.EAST);
-        jsp.setDividerLocation((getHeight()-120)/2);
+        jsp.setDividerLocation((getHeight1()-120)/2);
         JPanel add=new JPanel();
         //add.setOpaque(false);
-        add.setPreferredSize(new Dimension((getWidth()*5)/8,(getHeight()*17)/100));
-        add.setMaximumSize(new Dimension((getWidth()*5)/8,(getHeight()*17)/100));
+        add.setPreferredSize(new Dimension((getWidth1()*5)/8,(getHeight1()*17)/100));
+        add.setMaximumSize(new Dimension((getWidth1()*5)/8,(getHeight1()*17)/100));
         add.setLayout(new BorderLayout());
         add.add(news,BorderLayout.SOUTH);
         add.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -330,9 +380,9 @@ public class Main extends JApplet
         gbc.weighty=1.0;
         mpane.add(add,gbc);
         
-        JTabbedPane jtp=new JTabbedPane();
-        jtp.setPreferredSize(new Dimension((getWidth()*5)/8,(getHeight()*6)/10));
-        userpane=new JPanel[3];
+        jtp=new JTabbedPane();
+        jtp.setPreferredSize(new Dimension((getWidth1()*5)/8,(getHeight1()*6)/10));
+        userpane=new JPanel[4];
         
         dtm=new DefaultTableModel[3];
         dtm[0]=new DefaultTableModel(columnNames1,0);
@@ -403,6 +453,8 @@ public class Main extends JApplet
             userpane[i].add(mon[i],BorderLayout.SOUTH);
         }
         
+        userpane[3]=GraphPanel.main(client);
+        
         delete = new AbstractAction()
         {
             public void actionPerformed(ActionEvent e)
@@ -464,6 +516,8 @@ public class Main extends JApplet
         jtp.add("Holdings",userpane[0]);
         jtp.add("Watchlist",userpane[1]);
         jtp.add("Transactions",userpane[2]);
+        jtp.add("Overview",userpane[3]);
+        jtp.setEnabledAt(3,false);
         gbc.gridx=0;
         gbc.gridy=3;
         gbc.fill=GridBagConstraints.HORIZONTAL;
@@ -519,7 +573,7 @@ public class Main extends JApplet
         try{
             for(int i=0;i<3;i++)
             {
-                mon[i].setText("Avail. Cash : "+twoDForm.format(ur.getCurrentMoney()));
+                mon[i].setText("Avail. Cash : "+twoDForm.format(ur.getCurrentMoney())+"     Rank: "+RankingClient.rank);
                 mon[i].repaint();
             }
         }catch(Exception mm){mm.printStackTrace();}
@@ -558,7 +612,11 @@ public class Main extends JApplet
     
     public void stop() 
     {
-        if(client != null)
-            client.disconnect();
+        try {
+            if(client != null)
+                client.disconnect();
+        } finally {
+            System.exit(0);
+        }
     }
 }

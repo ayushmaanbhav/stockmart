@@ -57,11 +57,19 @@ public class BroadcastClient extends Thread
                                     Main.imglabel2.setText("<html><pre><font color=\"white\">Sensex: "+mtr[1]+"<br/>Time Left: "+mtr[0]+"</font></pre></html>");
                             }catch(Exception bb){bb.printStackTrace();}
                             try{
-                                svcl.valuesChanged();
                                 for(int i=0;i<clist.size();i++)
                                 {
                                     Companies.updateValues(clist.get(i).id,clist.get(i).name,clist.get(i).mktvalue,clist.get(i).inivalue,clist.get(i).high,clist.get(i).low);
                                 }
+                                if(hj==0)
+                                {
+                                    GraphPanel.mainPanel.setScores(Companies.comp);
+                                    Main.jtp.setEnabledAt(3,true);
+                                    hj=1;
+                                }
+                            }catch(Exception e){}
+                            try{
+                                svcl.valuesChanged();
                             }catch(Exception e){}
                         }
                     });
@@ -71,4 +79,5 @@ public class BroadcastClient extends Thread
             e.printStackTrace();
         }
     }
+    int hj=0;
 }

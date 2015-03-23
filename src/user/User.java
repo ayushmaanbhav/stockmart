@@ -34,6 +34,25 @@ public class User implements Serializable
         }catch(Exception e){}
         u=this;
     }
+    public User(User user)
+    {
+        name=new String(user.getName());
+        regno=new String(user.getRegNo());
+        password=new String(user.getPassword());
+        loggedin=user.isLoggedIn();
+        money=user.getCurrentMoney();
+        shares=new ArrayList<Shares>();
+        pendingshares=new ArrayList<Shares>();
+        for(int i=0;i<user.getCurrentShares().size();i++)
+            shares.add(new Shares(user.getCurrentShares().get(i)));
+        for(int i=0;i<user.getPendingShares().size();i++)
+            pendingshares.add(new Shares(user.getPendingShares().get(i)));
+        udcl=null;
+        chat=user.getChat();
+        chatEnabled=user.chatEnabled;
+        banned=user.banned;
+        u=this;
+    }
     public void setChat(int c)
     {
         chat=c;
@@ -75,6 +94,7 @@ public class User implements Serializable
         pendingshares=user.getPendingShares();
         chat=user.getChat();
         chatEnabled=user.chatEnabled;
+        banned=user.banned;
         u=this;
         dataChanged();
     }

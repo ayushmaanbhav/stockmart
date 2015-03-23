@@ -9,7 +9,7 @@ class RibbonPane extends JPanel implements ActionListener
     Timer t;
     int loop;
     JLabel l;
-    final String wel="                                                              StockMart                                                                                                                            Anwesha'13                                                             ";
+    final String wel="                                             StockMart  -  Disable proxy in java in control panel and in your browser too....                                                                  Register with your AnweshaID or you will be disqualified.....                                                                                                   ";
     public RibbonPane(int tm,Client cc)
     {
         sb=new StringBuffer(wel);

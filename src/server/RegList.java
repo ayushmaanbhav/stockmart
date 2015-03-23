@@ -23,11 +23,29 @@ class RegList
         }catch(Exception m){
         m.printStackTrace();}
     }
+    static void deleteUser(final User ur)
+    {
+        for(int i=0;i<userList.size();i++)
+        {
+            if(userList.get(i).checkName(ur.getName()))
+            {
+                userList.remove(i);
+                break;
+            }
+        }        
+    }
     static int registerUser(final String regno,final String name,String pass)
     {
+        boolean b=true;
         synchronized(userList)
         {
-            //if(containsRegNo(regno))
+            if(StockMart.checkRegNo)
+            {
+                b=false;
+                if(containsRegNo(regno))
+                    b=true;
+            }
+            if(b)
             {
                 for(int i=0;i<userList.size();i++)
                 {
@@ -45,7 +63,7 @@ class RegList
                 });
                 return 1;
             }
-            //return 2;
+            return 2;
         }
     }
     static boolean containsRegNo(String reg)
