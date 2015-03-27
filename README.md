@@ -12,12 +12,15 @@ Introduced real bidding whereas the code in the master branch operates on Monte 
 <h2>Guidelines</h2>
 <h3>Server</h3>
 money.txt: specify user's initial money. user will get that money and some random shares of the same value.<br>
-companies.txt: specify the companies and their initial share value just after their name, separated by a ":", ignore rest of the values.<br>
-reg.txt: if only user with allotted regnos are to be able to play then specify the registration nos in this file, (only small chars and numbers), you can disable the regno limitations by clicking on the button "CheckREG" on the main screen.<br>
+companies.txt: specify the companies and their initial share value just after their name, separated by a ":", ignore rest of the values. eg:<br>
+"Reliance:260"<br>
+(one company per line)<br>
+reg.txt: if only user with allotted regnos are to be able to play then specify the registration nos in this file, (only small chars and numbers), you can disable the regno. checking by clicking on the button "CheckREG" on the main screen.<br>
 Start server by double clicking it, set the time limit, wait for the users to connect, finally start the server by clicking the start button...<br>
-You can add spice to the game by using the text area below to show news to the users. "ONE NEWS ITEM PER LINE". News about companies to fluctuate the prices.:)<br>
+You can add spice to the game by using the text area below to show news to the users. "ONE NEWS ITEM PER LINE". News about companies to fluctuate the prices. :) Eg. of a positive news:<br>
+"Microsoft announces Windows 10. This new version will thrill the users."<br>
 You can view users in the user panel, increase their money, give them bonus, increase their chat, change their pass, ban and delete them, view their stocks and orders... etc<br>
-You can view the pending orders in the order queue and manually cancel them.
+You can view the pending orders in the order queue and manually cancel them if necessary or u face any problem.
 
 <h3>Client:</h3>
 Start client by cmd prompt or terminal by giving ip of the server as the first argument eg:<br>
