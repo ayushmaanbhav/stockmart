@@ -36,55 +36,72 @@
 <h2>
 <a id="features-and-improvements-branch-real-bid" class="anchor" href="#features-and-improvements-branch-real-bid" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features and Improvements (Branch: real-bid):</h2>
 
-<p>Introduced real bidding (market and limit orders) whereas the code in the master branch operates on Monte Carlo simulation and there is no real bidding. Introduced many new features like bid graphs and order queue graphs !!! Fixed many bugs.... Developed a matching engine for matching orders or bids..... Improved code structure....</p>
+<p>Introduced real bidding whereas the code in the master branch operates on Monte Carlo simulation and there is no real bidding. Introduced many new features like bid graphs and order queue graphs !!! Fixed many bugs.... Developed a matching engine for matching orders or bids..... Improved code structure....</p>
+
+<h2>
+<a id="guidelines" class="anchor" href="#guidelines" aria-hidden="true"><span class="octicon octicon-link"></span></a>Guidelines</h2>
+
+<h3>
+<a id="server" class="anchor" href="#server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Server</h3>
+
+<ul>
+<li>money.txt: specify user's initial money. user will get that money and some random shares of the same value.<br>
+</li>
+<li>companies.txt: specify the companies and their initial share value just after their name, separated by a ":", ignore rest of the values. eg:<br>
+"Reliance:260"<br>
+(one company per line)<br>
+</li>
+<li>reg.txt: if only user with allotted regnos are to be able to play then specify the registration nos in this file, (only small chars and numbers), you can disable the regno. checking by clicking on the button "CheckREG" on the main screen.<br>
+</li>
+<li>Start server by double clicking it, set the time limit, wait for the users to connect, finally start the server by clicking the start button...<br>
+</li>
+<li>You can add spice to the game by using the text area below to show news to the users. "ONE NEWS ITEM PER LINE". News about companies to fluctuate the prices. :) Eg. of a positive news:<br>
+"Microsoft announces Windows 10. This new version will thrill the users."<br>
+</li>
+<li>You can view users in the user panel, increase their money, give them bonus, increase their chat, change their pass, ban and delete them, view their stocks and orders... etc<br>
+</li>
+<li>You can view the pending orders in the order queue and manually cancel them if necessary or u face any problem.</li>
+</ul>
+
+<h3>
+<a id="client" class="anchor" href="#client" aria-hidden="true"><span class="octicon octicon-link"></span></a>Client:</h3>
+
+<ul>
+<li>Start client by cmd prompt or terminal by giving ip of the server as the first argument eg:<br>
+"java -jar StockMartClient.jar -localhost"<br>
+</li>
+<li>Register (each field is restricted to use only small chars and nos.), login and start playing.</li>
+</ul>
 
 <h2>
 <a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span class="octicon octicon-link"></span></a>Screenshots:</h2>
 
 <h3>
-<a id="server" class="anchor" href="#server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Server:</h3>
+<a id="server-1" class="anchor" href="#server-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Server:</h3>
 
-<div>
-<img src="https://cloud.githubusercontent.com/assets/4680789/6806859/49115ab2-d271-11e4-825e-41dfd4e2e7f8.PNG">
+<p><img src="https://cloud.githubusercontent.com/assets/4680789/6806859/49115ab2-d271-11e4-825e-41dfd4e2e7f8.PNG">
 <img src="https://cloud.githubusercontent.com/assets/4680789/6806858/48f789b6-d271-11e4-97ab-c82c5c968cba.PNG">
 <img src="https://cloud.githubusercontent.com/assets/4680789/6806861/4943f0a8-d271-11e4-8420-e7d70787b33d.PNG">
-<img src="https://cloud.githubusercontent.com/assets/4680789/6806860/491cf318-d271-11e4-8838-d64e31166f01.PNG">
-</div>
+<img src="https://cloud.githubusercontent.com/assets/4680789/6806860/491cf318-d271-11e4-8838-d64e31166f01.PNG"></p>
 
 <h3>
-<a id="client" class="anchor" href="#client" aria-hidden="true"><span class="octicon octicon-link"></span></a>Client:</h3>
+<a id="client-1" class="anchor" href="#client-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Client:</h3>
 
-<div>
-<img src="https://cloud.githubusercontent.com/assets/4680789/6806856/486c49fa-d271-11e4-8a67-67826f90efe5.PNG">
+<p><img src="https://cloud.githubusercontent.com/assets/4680789/6806856/486c49fa-d271-11e4-8a67-67826f90efe5.PNG">
 <img src="https://cloud.githubusercontent.com/assets/4680789/6806853/485f95e8-d271-11e4-95fb-c4f9beb67c29.PNG">
 <img src="https://cloud.githubusercontent.com/assets/4680789/6806854/48645f4c-d271-11e4-9c73-1d42545a5c93.PNG">
 <img src="https://cloud.githubusercontent.com/assets/4680789/6806855/486b8c9a-d271-11e4-94a5-20b15fef0a76.PNG">
-<img src="https://cloud.githubusercontent.com/assets/4680789/6806857/48c4131a-d271-11e4-8a39-da2d3f5a904d.PNG">
-</div>
+<img src="https://cloud.githubusercontent.com/assets/4680789/6806857/48c4131a-d271-11e4-8a39-da2d3f5a904d.PNG"></p>
         </section>
 
         <aside id="sidebar">
-          <h2>Binaries:</h2>
-          <h3>Real Bidding:</h3>
-          <a href="https://github.com/ayushmaanbhav/stockmart/releases/download/v2.1-prod/StockMart.2.1.rar" class="button">
+          <a href="https://github.com/ayushmaanbhav/stockmart/zipball/master" class="button">
             <small>Download</small>
-            .rar (v2.1)
+            .zip file
           </a>
-          <h3>Simulation Based:</h3>
-          <a href="https://github.com/ayushmaanbhav/stockmart/releases/download/v1.1-prod/stockmart-1.1-bin.rar" class="button">
-            <small>Download</small>
-            .rar (v1.1)
-          </a>
-          <h2>Sources:</h2>
-          <h3>Real Bidding:</h3>
-          <a href="https://github.com/ayushmaanbhav/stockmart/tarball/real-bid" class="button">
-            <small>Download</small>
-            .tar.gz
-          </a>
-          <h3>Simulation Based:</h3>
           <a href="https://github.com/ayushmaanbhav/stockmart/tarball/master" class="button">
             <small>Download</small>
-            .tar.gz
+            .tar.gz file
           </a>
 
           <p class="repo-owner"><a href="https://github.com/ayushmaanbhav/stockmart"></a> is maintained by <a href="https://github.com/ayushmaanbhav">ayushmaanbhav</a>.</p>
