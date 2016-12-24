@@ -1,7 +1,7 @@
 StockMart
 =========
 
-A java based Virtual Stock Exchange Game (VSE)
+A java based Virtual Stock Exchange Game (VSE)<br>
 Want to know more about Stock Markets? Here: https://www.youtube.com/watch?v=F3QpgXBtDeo
 
 <h2>Description:</h2>
